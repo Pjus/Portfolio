@@ -1,0 +1,87 @@
+setwd("c:/Rdata/토픽분석")
+
+
+자료<-read.csv("자료.csv",as.is=T,encoding="euc-kr")
+자료
+
+토픽<-read.csv("토픽.csv",as.is=T, encoding="euc-kr")
+토픽
+
+긍정어<-read.csv("긍정어.csv",as.is=T, encoding="euc-kr")
+긍정어
+
+부정어<-read.csv("부정어.csv",as.is=T, encoding="euc-kr")
+부정어
+
+df<-cbind(자료,토픽="")
+df
+str(df)
+
+# Factor형식의 df$토픽을 Character형식으로 바꿈
+df$토픽<-as.character(df$토픽)
+str(df)
+
+for (i in 1:nrow(긍정어)) {
+행번호=grep(긍정어[i,1],df$단어)
+df[행번호,3]=df[행번호,3]+긍정어[i,2]
+}
+
+df
+
+for (i in 1:nrow(부정어)) {
+행번호=grep(부정어[i,1],df$단어)
+df[행번호,4]=df[행번호,4]+부정어[i,2]
+}
+
+df
+
+for (i in 1:nrow(토픽)) {
+행번호=grep(토픽[i,1],df$단어)
+df[행번호,5]=토픽[i,2]
+}
+df
+
+#---------집계-----------
+
+분류<-split(df,df$토픽)
+분류
+
+집계=c()
+for (i in 1:length(분류)){
+	tot<-sum(분류[[i]][,2])
+	집계=c(집계,tot)
+}
+
+집계
+
+names(집계)=names(분류)
+
+집계
+
+집계<-집계[-1]
+집계
+
+#-----시각화------------
+barplot(집계)
+
+
+pct=round(집계/sum(집계)*100,1)
+pct
+lab=paste(names(집계),"\n",pct,"%")
+lab
+pie(집계,cex=0.8, labels=lab)
+
+
+#-----특정 토픽만 시각화-----------
+
+d<-분류$은은$단어빈도수
+names(d)<-분류$향$단어
+d
+d<-sort(d,decreasing=T)
+barplot(d)
+
+library(wordcloud)
+wordcloud(words=names(d),freq=d)
+
+library(wordcloud2)
+wordcloud2(분류$구매방법[,1:2])
